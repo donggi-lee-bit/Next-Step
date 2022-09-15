@@ -66,4 +66,8 @@ public class User {
         return true;
     }
 
+    public User update(User user) {
+        return new User(user.userId, user.password, user.name, user.email);
+    }
+
 }
