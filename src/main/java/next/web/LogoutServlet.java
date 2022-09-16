@@ -22,6 +22,6 @@ public class LogoutServlet extends HttpServlet {
         throws ServletException, IOException {
         HttpSession session = req.getSession();
         session.removeAttribute("user");
-        resp.sendRedirect("/user/list");
+        resp.sendRedirect("/user/login.jsp");
     }
 }
