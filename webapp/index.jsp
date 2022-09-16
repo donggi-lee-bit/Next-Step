@@ -70,7 +70,8 @@
             <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="index.jsp">Posts</a></li>
                 <c:choose>
-                    <c:when test="${not empty sessionScope.user}">
+<%--                    not empty: 객체 값이 비어있지 않을 경우 true--%>
+                    <c:when test="${not empty user}">
                         <li><a href="/" role="button">로그아웃</a></li>
                         <li><a href="user/update.jsp" role="button">개인정보수정</a></li>
                     </c:when>
