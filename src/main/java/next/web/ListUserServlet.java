@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/user/list")
 public class ListUserServlet extends HttpServlet {
+    // todo 사용자 목록은 로그인한 사용자만 조회가 가능하다.
+    // todo 로그인하지 않으면 접근 불가
     private static final long serialVersionUID = 1L;
 
     @Override

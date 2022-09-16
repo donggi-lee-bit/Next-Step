@@ -33,6 +33,6 @@ public class LoginServlet extends HttpServlet {
         // 해당 유저의 session 발급
         HttpSession session = req.getSession();
         session.setAttribute("user", findUser);
-        resp.sendRedirect("/user/list");
+        resp.sendRedirect("/");
     }
 }
