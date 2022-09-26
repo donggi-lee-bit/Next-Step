@@ -1,9 +1,10 @@
 package webserver;
 
 import db.DataBase;
-import http.request.HttpRequest;
-import http.request.RequestReader;
-import http.response.ResponseWriter;
+import http.HttpRequest;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,44 +33,76 @@ public class RequestHandler extends Thread {
                 connection.getPort());
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-            RequestReader requestReader = new RequestReader(in);
-            HttpRequest httpRequest = requestReader.create();
-            new ResponseWriter(httpRequest);
+            HttpRequest request = new HttpRequest(in);
 
-            // create user
-            if ("/user/create".equals(httpRequest.getUrl())) {
-                User user = createUser(httpRequest.getBody());
-                log.debug("user: {}", user);
-                httpResponse.response302Header("/index.html");
-                DataBase.addUser(user);
-                return;
-            }
-
-            // login logic
-            if ("/user/login".equals(httpRequest.getUrl())) {
-                Map<String, String> params = httpRequest.getBody();
-                LoginResult result = loginService.login(params.get("userId"),
-                    params.get("password"));
-                httpResponse.response302HeaderWithLoginResult(result.getUrl(), result.isLogined());
-                return;
-            }
+            // Request Line
+//            String line = br.readLine();
+//            log.debug("request line: {}", line);
+//            String[] tokens = line.split(" ");
+//
+//            int contentLength = 0;
+//            String cookie = "";
+//            while (!line.equals("")) {
+//                log.debug("header: {}", line);
+//                line = br.readLine();
+//                if (line.contains("Content-Length")) {
+//                    String[] headerTokens = line.split(":");
+//                    contentLength = Integer.parseInt(headerTokens[1].trim());
+//                }
+//
+//                if (line.contains("Cookie")) {
+//                    String[] headerTokens = line.split(":");
+//                    cookie = headerTokens[1].trim();
+//                }
+//            }
+//
+//            String url = tokens[1];
+//            if (CREATE_USER_PATH.equals(url)) {
+//                Map<String, String> params = getParams(br, contentLength);
+//
+//                User user = new User(
+//                    params.get("userId"),
+//                    params.get("password"),
+//                    params.get("name"),
+//                    params.get("email"));
+//                log.debug("user: {}", user);
+//                DataOutputStream dos = new DataOutputStream(out);
+//                response302Header(dos, "/index.html");
+//                DataBase.addUser(user);
+//                return;
+//            }
+//
+//            // login logic
+//            if ("/user/login".equals(url)) {
+//                Map<String, String> params = getParams(br, contentLength);
+//                LoginResult result = loginService.login(params.get("userId"),
+//                    params.get("password"));
+//                DataOutputStream dataOutputStream = new DataOutputStream(out);
+//                response302HeaderWithLoginResult(dataOutputStream, result.getUrl(), result.isLogined());
+//                return;
+//            }
 
             // user list logic
-            if ("/user/list".equals(httpRequest.getUrl())) {
-                if (!httpRequest.getCookie().getIsLogined().isEmpty()) {
-                    String loginStatus = httpRequest.getCookie().getIsLogined();
-                    if (loginStatus.equals("true")) {
-                        httpResponse.response302Header("/user/list.html");
-                    }
-                } else {
-                    httpResponse.response302Header("login.html");
-                }
-                return;
-            }
-
-            byte[] body = httpResponse.getBody(httpRequest.getUrl());
-            httpResponse.response200Header(body.length);
-            httpResponse.responseBody(body);
+//            if ("/user/list".equals(url)) {
+//                if (!cookie.isEmpty()) {
+//                    String[] split = cookie.split("=");
+//                    String loginStatus = split[1];
+//                    if (loginStatus.equals("true")) {
+//                        DataOutputStream dataOutputStream = new DataOutputStream(out);
+//                        response302Header(dataOutputStream, "/user/list.html");
+//                    }
+//                } else {
+//                    DataOutputStream dataOutputStream = new DataOutputStream(out);
+//                    response302Header(dataOutputStream, "login.html");
+//                }
+//                return;
+//            }
+//
+//            log.debug("line: {}", line);
+//            byte[] body = Files.readAllBytes(new File("./webapp" + tokens[1]).toPath());
+//            DataOutputStream dos = new DataOutputStream(out);
+//            response200Header(dos, body.length);
+//            responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
