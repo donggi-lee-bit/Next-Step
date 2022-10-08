@@ -78,4 +78,34 @@ type은 주분류, subtype은 주분류에서 나눈 종류로 생각하면 됨 
 
 출처 : https://pygmalion0220.tistory.com/entry/HTTP-Content-Type
 
+## 다형성을 활용해 클라이언트 요청 URL에 대한 분기 처리 제거
+
+RequestHandler 의 run() 의 문제점은 기능이 추가될 때마다 <br>
+새로운 else if 절이 추가되는 구조로 구현되어 있다. <br>
+<br>
+이는 객체지향 설계 원칙 중 OCP (개방폐쇄의 원칙) 원칙을 위반하고 있다. <br>
+새로운 기능이 추가되거나 수정이 발생하더라도 변화의 범위를 최소화하도록 설계를 개선해보자. <br>
+<br>
+각 분기문을 메서드로 분리하는 리팩토링을 진행하고 보니 각 메서드는 HttpRequest, HttpResponse 만 인자로 받는 것을 확인할 수 있다. <br>
+<br>
+이와 같이 메서드 원형이 같을 때 Java의 인터페이스로 추출하는 것이 가능하다. <br>
+`Controller` 라는 이름의 인터페이스를 추가한다. <br>
+<br>
+Controller 인터페이스를 추가한 후 분기문에서 분리했던 메서드의 구현 코드를 <br>
+Controller 인터페이스에 대한 구현 클래스로 이동한다. <br>
+<br>
+이제 각 요청 URL에 대응하는 Controller를 연결하는 `RequestMapping` 이라는 클래스를 추가한다. <br>
+RequestMapping은 웹 애플리케이션에서 서비스하는 모든 URL과 Controller를 관리하고 있으며, <br>
+요청 URL에 해당하는 Controller를 반환하는 역할을 한다. <br>
+<br>
+앞으로 새로운 기능이 추가되면 Controller 인터페이스를 구현하는 새로운 클래스를 추가한 후 RequestMapping Map에 요청 URL과 Controller 클래스를 추가하면 모든 작업이 끝난다. <br>
+<br>
+각 클래스 간에는 어떠한 영향도 미치지 않으면서 새로운 기능을 추가하는 것이 가능하다. <br>
+또한 변경 사항이 발생하면 다른 클래스에 영향을 미칮 않으면서 해당 Controller 클래스의 service() 메서드만 수정하면 된다.
+
+## HTTP 메서드에 따라 다른 처리 할 수 있도록 Abstract class 를 추가
+
+AbstractController를 추가하여 각 Controller는 Controller 인터페이스를 직접 구현하는 것이 아닌 AbstractController를 상속해 각 HTTP 메서드에 맞는 메서드를 오버라이드하도록 구현. <br>
+<br>
+이렇게 할 경우 요청 URL이 같더라도 HTTP 메서드가 다른 경우 새로운 Controller 클래스를 추가하지 않고 Controller 하나로 GET, POST 요청을 모두 지원하는 것이 가능해짐 <br>
 
