@@ -1,44 +1,63 @@
 package http.request;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpRequestUtils;
+import util.IOUtils;
 
 public class HttpRequest {
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
-    private static Map<String, Controller> controllerMap = new HashMap<>();
 
-    private Map<String, String> header;
-    private Map<String, String> body;
-    private String method;
-    private String url;
-    private String protocol;
-    private Cookie cookie;
+    private RequestLine requestLine;
+    private HttpHeaders headers;
+    private RequestParams requestParams = new RequestParams();
 
-    static {
-        controllerMap.put("/user/create", new CreateUserController());
+    public HttpRequest(InputStream in) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            requestLine = new RequestLine(createRequestLine(br));
+            requestParams.addQueryString(requestLine.getQueryString());
+            headers = processHeaders(br);
+            requestParams.addBody(IOUtils.readData(br, headers.getContentLength()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
-
-    public HttpRequest(Map<String, String> header,
-        Map<String, String> body, String method, String url, String protocol) {
-        this.header = header;
-        this.body = body;
-        this.method = method;
-        this.url = url;
-        this.protocol = protocol;
-        this.cookie = parseCookie(header);
+    private HttpHeaders processHeaders(BufferedReader br) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        String line;
+        while (!(line = br.readLine()).equals("")) {
+            headers.add(line);
+        }
+        return headers;
     }
 
-    public void doExecute() {
-
+    private String createRequestLine(BufferedReader br) throws IOException {
+        String line = br.readLine();
+        if (line == null) {
+            throw new IllegalStateException();
+        }
+        return line;
     }
 
-    private Cookie parseCookie(Map<String, String> header) {
-        Map<String, String> cookie = HttpRequestUtils.parseCookies(header.get("Cookie"));
-        return new Cookie(cookie.get("isLogined"), cookie.get("path"));
+    public HttpMethod getMethod() {
+        return requestLine.getMethod();
+    }
+
+    public String getPath() {
+        return requestLine.getPath();
+    }
+
+    public String getHeader(String header) {
+        return headers.getHeader(header);
+    }
+
+    public String getParameter(String name) {
+        return requestParams.getParameter(name);
     }
 }
