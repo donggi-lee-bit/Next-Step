@@ -8,11 +8,10 @@ import java.util.Map;
 import model.User;
 import util.HttpRequestUtils;
 
-public class ListUserController implements Controller{
-
+public class ListUserController extends AbstractController {
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) {
+    protected void doGet(HttpRequest request, HttpResponse response) {
         if (!isLogin(request.getHeader("Cookie"))) {
             response.sendRedirect("/user/login.html");
             return;

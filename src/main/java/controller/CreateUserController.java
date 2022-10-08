@@ -5,10 +5,10 @@ import http.request.HttpRequest;
 import http.response.HttpResponse;
 import model.User;
 
-public class CreateUserController implements Controller{
+public class CreateUserController extends AbstractController {
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) {
+    protected void doPost(HttpRequest request, HttpResponse response) {
         User user = new User(request.getParameter("userId"),
             request.getParameter("password"),
             request.getParameter("name"),

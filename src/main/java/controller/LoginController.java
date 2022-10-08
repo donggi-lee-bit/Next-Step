@@ -5,10 +5,10 @@ import http.request.HttpRequest;
 import http.response.HttpResponse;
 import model.User;
 
-public class LoginController implements Controller{
+public class LoginController extends AbstractController{
 
     @Override
-    public void service(HttpRequest request, HttpResponse response) {
+    protected void doPost(HttpRequest request, HttpResponse response) {
         User findUser = DataBase.findUserById(request.getParameter("userId"));
         if (findUser != null) {
             // 존재하는 회원
