@@ -38,57 +38,64 @@ public class RequestHandler extends Thread {
 
             // create 요청
             if ("/user/create".equals(path)) {
-                User user = new User(request.getParameter("userId"),
-                    request.getParameter("password"),
-                    request.getParameter("name"),
-                    request.getParameter("email"));
-
-                log.debug("user: {}", user);
-                DataBase.addUser(user);
-                response.sendRedirect("/index.html");
+                createUser(request, response);
             } else if ("/user/login".equals(path)) {
-                // 로그인 요청
-                // DB에서 입력 받은 id로 존재하는 회원인지 조회
-                // 존재하면 password 비교하여 맞으면 session 발급하여 로그인 성공
-                // 존재하지 않은 회원이면 loginFailed.html 로 ㄱㄱ
-                // password 틀려도 loginFailed.html 로 ㄱㄱ
-                User findUser = DataBase.findUserById(request.getParameter("userId"));
-                if (findUser != null) {
-                    // 존재하는 회원
-                    if (findUser.login(request.getParameter("password"))) {
-                        // 비밀번호 맞으면 로그인 성공
-                        response.addHeader("Set-Cookie", "logined=true; Path=/");
-                        response.sendRedirect("/index.html");
-                    } else {
-                        // 비밀 번호 틀리면 로그인 실패
-                        response.sendRedirect("/user/login_failed.html");
-                    }
-                } else {
-                    response.sendRedirect("/user/login_failed.html");
-                }
+                login(request, response);
             } else if ("/user/list".equals(path)) {
-                if (!isLogin(request.getHeader("Cookie"))) {
-                    response.sendRedirect("/user/login.html");
-                    return;
-                }
-
-                Collection<User> users = DataBase.findAll();
-                StringBuilder sb = new StringBuilder();
-                sb.append("<table border='1'>");
-                for (User user : users) {
-                    sb.append("<tr>");
-                    sb.append("<tr>" + user.getUserId() + "</td>");
-                    sb.append("<tr>" + user.getName() + "</td>");
-                    sb.append("<tr>" + user.getEmail() + "</td>");
-                    sb.append("</tr>");
-                }
-                response.forwardBody(sb.toString());
+                listUser(request, response);
             } else {
                 response.forwardBody(path);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private void listUser(HttpRequest request, HttpResponse response) {
+        if (!isLogin(request.getHeader("Cookie"))) {
+            response.sendRedirect("/user/login.html");
+            return;
+        }
+
+        Collection<User> users = DataBase.findAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table border='1'>");
+        for (User user : users) {
+            sb.append("<tr>");
+            sb.append("<tr>" + user.getUserId() + "</td>");
+            sb.append("<tr>" + user.getName() + "</td>");
+            sb.append("<tr>" + user.getEmail() + "</td>");
+            sb.append("</tr>");
+        }
+        response.forwardBody(sb.toString());
+    }
+
+    private static void login(HttpRequest request, HttpResponse response) {
+        User findUser = DataBase.findUserById(request.getParameter("userId"));
+        if (findUser != null) {
+            // 존재하는 회원
+            if (findUser.login(request.getParameter("password"))) {
+                // 비밀번호 맞으면 로그인 성공
+                response.addHeader("Set-Cookie", "logined=true; Path=/");
+                response.sendRedirect("/index.html");
+            } else {
+                // 비밀 번호 틀리면 로그인 실패
+                response.sendRedirect("/user/login_failed.html");
+            }
+        } else {
+            response.sendRedirect("/user/login_failed.html");
+        }
+    }
+
+    private static void createUser(HttpRequest request, HttpResponse response) {
+        User user = new User(request.getParameter("userId"),
+            request.getParameter("password"),
+            request.getParameter("name"),
+            request.getParameter("email"));
+
+        log.debug("user: {}", user);
+        DataBase.addUser(user);
+        response.sendRedirect("/index.html");
     }
 
     private boolean isLogin(String cookie) {
