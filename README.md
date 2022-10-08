@@ -1,53 +1,81 @@
-# Next Step
+# next step
 
-# chapter03 was
+## forward 와 redirect 의 차이
 
-# chapter04 Refactoring
+### forward 방식
 
-## RequestHandler Refactoring
+`Forward` 는 web container 차원에서 페이지 이동만 존재
+<br>
+실제로 웹 브라우저는 다른 페이지로 이동했음을 알 수 없음
 
-모든 로직이 RequestHandler를 통해서 동작하고 있다. 객체가 서로 협력할 수 있게끔 리팩토링을 진행.
+- 이동할 url 요청 정보를 그대로 전달
+  - 그렇기 떄문에 사용자가 최초로 요청한 요청 정보는 다음 url에서도 유효함
+- 시스템 변화가 생기지 않는 단순 조회 요청의 경우 forward로 응답하는 것이 바람직하다
 
-협력 책임 역할
+### redirect 방식
 
-- 객체를 협력하게 하기 위해 자율적인 객체를 만들기 위해 내부 구현을 캡슐화한다
-- 
+`redirect` 는 web container로 명령이 들어오면 웹 브라우저에게 다른 페이지로 이동하라고 명령을 내린다. <br>
+그러면 웹 브라우저는 url을 지시된 주소로 바꾸고 해당 주소로 이동. <br>
+다른 웹 컨테이너에 있는 주소로 이동하며 새로운 페이지에는 request, response 객체가 새롭게 생성됨. <br>
 
-### HTTP Request
+- `redirect` 의 경우 최초 요청을 받은 url1 에서 클라이언트에게 redirect 할 url2 를 반환
+- 클라이언트는 새로운 요청을 생성하여 url2 에 다시 요청을 보냄
+  - 그렇기에 최초의 request, response 객체는 유효하지 않고 새롭게 생성됨
+- 시스템 변화가 생기는 요청 (create, update) 의 경우에 redirect 응답이 바람직하다
 
- 브라우저로부터 받은 요청을 읽어서 처리하기 위해는 어떤 객체의 협력을 통해 이루어질까
-먼저 브라우저의 요청을 읽는 객체가 있을 것이다. 이 객체가 브라우저의 요청을 읽으면
-브라우저의 어떤 요청인지 읽어보아야 한다. 
+출처 : https://mangkyu.tistory.com/51
 
- Request Line, Request Header, Request body가 있을 것이다. GET method를 통해 브라우저가 데이터를 요청했다면 Request body의 값은 없을 것이다.
- 그러면 Request Line, Header, Body를 파싱하는 객체가 있어야할 것 같다. 파싱을 통해 브라우저가 원하는 게 뭔지 알 수 있을 것이다.
+## Content-Type
 
- 데이터 중심 관점이 아닌 책임 중심 관점으로 리팩토링을 해보자.
- HTTP Request 에 관한 책임을 수행하기 위해서는
- - 브라우저로부터 요청을 읽어오는 객체
- - 요청을 읽어 Request Line, header, body로 각각 파싱하는 객체 -> 파싱이라는 게 결국 읽는 것
-   - 파싱하는 객체는 브라우저의 요청을 응답하기 위해 파싱한 데이터를 Response 책임을 가진 객체에게 응답하라라고 메시지를 던진다
+Content-Type이란 HTTP 통신에서 전송되는 데이터의 타입을 나타내는 header 정보 중 하나이다. <br>
+Content-Type에 따라 데이터를 받는 측에서는 데이터를 어떻게 처리할지 판단한다. <br>
+데이터를 받는 측은 주로 request 를 보내는 웹 브라우저와 response 를 받는 웹서버 둘 다 포함된다. <br>
 
-### HTTP Request 고민한 내용
+- 예로 서버에서 브라우저로 이미지 파일을 보낼 경우 `reponse header` 에 `content-type` 은 `image/svg` 를 지정해서 보낸다
+- 데이터를 받는 측에서는 content-type 을 확인 후 데이터를 어떻게 분석, 파싱할지 정하고 처리
 
-RequestReader 객체에서 쿠키까지 파싱해서 HttpRequest 객체에게 주는 게 맞을까하는 생각이 들었다
--> header를 읽어서 HttpRequest 객체에게 주고 있기 때문에 HttpRequest 객체가 쿠키를 파싱하는 책임을 갖도록 변경
+### 특징
 
-### HTTP Response
+- 특정 data(image, video) 를 content-type 없이 보내면 데이터를 받는 쪽에서는 단순 텍스트 데이터로 받는다
+- GET 요청시 value=text 형식으로 보내지기 떄문에 content-type 은 필요없다
+- POST, PUT 처럼 body에 데이터를 담아 보낼 때 content-type 필요
 
-RequestReader에서 브라우저의 요청을 읽고 HttpRequest에게 Request Line, Header, Body 를 파싱해서 주었다.
-HttpRequest가 이제 HTTP method, url, body 등 데이터를 통해 브라우저에게 응답할 데이터를 만들어라고 객체에게 메시지를 줄 차례다.
-브라우저에게 Response 해주기 위해 어떤 요청이 왔는지에 따라 처리하기 위해 ResponseWriter 객체를 두어 응답
+### MIME
 
-오 여기서 인터페이스 사용을 해도 되겠다. HTTP method에 따라 GET, POST 
+MIME이란, Multipurpose Internet Mail Extensions 의 약자
 
-브라우저로 응답하기 위해 ResponseWriter가 request method, url, header, body 데이터를 통해 어떤 요청이 온 건지 확인한다.
-확인한 걸 통해 요청 받은 걸 응답해주기 위해 또 하나의 객체에게 응답하도록 메시지를 던진다.
-메시지를 받은 그 객체는 GET 요청이면 원하는 html 파일을 읽어서 응답하기 위해 하나의 객체에게 메시지를 던지고
-POST 요청이면 body 데이터를 샬라샬라 이 또한 하나의 객체가 처리한다ㅏㅏㅏ
+전자 우편을 위한 인터넷 표준 포맷이다. 전자우편은 7비트 ASCII 문자를 사용하여 전송되기 때문에, 8비트 이상의 코드를 사용하는 문자나 이진 파일들은 MIME 포맷으로 변환되어 SMTP로 전송된다. 실질적으로 SMTP로 전송되는 대부분의 전자 우편은 MIME 형식이다. MIME 표준에 정의된 content types은 HTTP와 같은 통신 프로토콜에서 사용되며, 점차 그 중요성이 커지고 있다.
+- 위키백과 -
 
-HttpRequest 객체가 가지고 있는 method, url, header, body로
-브라우저에서 요청한 것을 수행하고 HTTP Status code 와 같은 걸 response 에게 응답하도록 메시지를 던진다
+### 종류
 
-갑자기 데이터에 갇히게 되니 진행이 어려워진다
+`type/subtype`
+`/` 로 구분되며 type은 카테고리, subtype 은 개별 혹은 멀티파트 타입으로 나타낸다 <br>
+type은 주분류, subtype은 주분류에서 나눈 종류로 생각하면 됨 <br>
+또한 스페이스는 허용되지 않고 대소문자를 구분하지 않지만 통상적으로 소문자를 사용함 <br>
+
+주요 content-type 만 살펴보자
+
+**content-type: application/octet-stream**
+- 이진 파일의 기본 타입
+- 브라우저에서 자동으로 실행하지 않거나 실행할지 묻는다
+
+**content-type: text/plain**
+- 텍스트 파일 기본 타입
+
+**content-type: image/**
+- content-type: image/png
+- content-type: image/Jpeg
+- content-type: image/gif
+- content-type: image/webp
+브라우저는 해당 컨텐트를 이미지로 취급한다
+
+**content-type: text/javascript**
+- javascript 문서로 취급
+
+**content-type: multipart/form-data**
+- <form> 태그를 사용해 브라우저에서 서버로 전송할 때 사용
+
+출처 : https://pygmalion0220.tistory.com/entry/HTTP-Content-Type
+
 

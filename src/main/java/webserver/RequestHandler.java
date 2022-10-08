@@ -1,6 +1,8 @@
 package webserver;
 
+import db.DataBase;
 import http.request.HttpRequest;
+import http.response.HttpResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,45 +31,42 @@ public class RequestHandler extends Thread {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             HttpRequest request = new HttpRequest(in);
+            HttpResponse response = new HttpResponse(out);
+            String path = getDefaultPath(request.getPath());
 
-            // Request Line
-//            String line = br.readLine();
-//            log.debug("request line: {}", line);
-//            String[] tokens = line.split(" ");
-//
-//            int contentLength = 0;
-//            String cookie = "";
-//            while (!line.equals("")) {
-//                log.debug("header: {}", line);
-//                line = br.readLine();
-//                if (line.contains("Content-Length")) {
-//                    String[] headerTokens = line.split(":");
-//                    contentLength = Integer.parseInt(headerTokens[1].trim());
-//                }
-//
-//                if (line.contains("Cookie")) {
-//                    String[] headerTokens = line.split(":");
-//                    cookie = headerTokens[1].trim();
-//                }
-//            }
-//
-//            String url = tokens[1];
-//            if (CREATE_USER_PATH.equals(url)) {
-//                Map<String, String> params = getParams(br, contentLength);
-//
-//                User user = new User(
-//                    params.get("userId"),
-//                    params.get("password"),
-//                    params.get("name"),
-//                    params.get("email"));
-//                log.debug("user: {}", user);
-//                DataOutputStream dos = new DataOutputStream(out);
-//                response302Header(dos, "/index.html");
-//                DataBase.addUser(user);
-//                return;
-//            }
-//
-//            // login logic
+            // create 요청
+            if ("/user/create".equals(path)) {
+                User user = new User(request.getParameter("userId"),
+                    request.getParameter("password"),
+                    request.getParameter("name"),
+                    request.getParameter("email"));
+
+                log.debug("user: {}", user);
+                DataBase.addUser(user);
+                response.sendRedirect("/index.html");
+            } else if ("/user/login".equals(path)) {
+                // 로그인 요청
+                // DB에서 입력 받은 id로 존재하는 회원인지 조회
+                // 존재하면 password 비교하여 맞으면 session 발급하여 로그인 성공
+                // 존재하지 않은 회원이면 loginFailed.html 로 ㄱㄱ
+                // password 틀려도 loginFailed.html 로 ㄱㄱ
+                User findUser = DataBase.findUserById(request.getParameter("userId"));
+                if (findUser != null) {
+                    // 존재하는 회원
+                    if (findUser.login(request.getParameter("password"))) {
+                        // 비밀번호 맞으면 로그인 성공
+                        response.addHeader("Set-Cookie", "logined=true; Path=/");
+                        response.sendRedirect("/index.html");
+                    } else {
+                        // 비밀 번호 틀리면 로그인 실패
+                        response.sendRedirect("/user/login_failed.html");
+                    }
+                } else {
+                    response.sendRedirect("/user/login_failed.html");
+                }
+            }
+
+            // login logic
 //            if ("/user/login".equals(url)) {
 //                Map<String, String> params = getParams(br, contentLength);
 //                LoginResult result = loginService.login(params.get("userId"),
@@ -76,8 +75,8 @@ public class RequestHandler extends Thread {
 //                response302HeaderWithLoginResult(dataOutputStream, result.getUrl(), result.isLogined());
 //                return;
 //            }
-
-            // user list logic
+//
+//             user list logic
 //            if ("/user/list".equals(url)) {
 //                if (!cookie.isEmpty()) {
 //                    String[] split = cookie.split("=");
@@ -103,7 +102,12 @@ public class RequestHandler extends Thread {
         }
     }
 
-
+    private String getDefaultPath(String path) {
+        if (path.equals("/")) {
+            path = "/index.html";
+        }
+        return path;
+    }
 
     private User createUser(Map<String, String> params) {
         return new User(
