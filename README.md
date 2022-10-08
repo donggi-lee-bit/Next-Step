@@ -102,3 +102,10 @@ RequestMapping은 웹 애플리케이션에서 서비스하는 모든 URL과 Con
 <br>
 각 클래스 간에는 어떠한 영향도 미치지 않으면서 새로운 기능을 추가하는 것이 가능하다. <br>
 또한 변경 사항이 발생하면 다른 클래스에 영향을 미칮 않으면서 해당 Controller 클래스의 service() 메서드만 수정하면 된다.
+
+## HTTP 메서드에 따라 다른 처리 할 수 있도록 Abstract class 를 추가
+
+AbstractController를 추가하여 각 Controller는 Controller 인터페이스를 직접 구현하는 것이 아닌 AbstractController를 상속해 각 HTTP 메서드에 맞는 메서드를 오버라이드하도록 구현. <br>
+<br>
+이렇게 할 경우 요청 URL이 같더라도 HTTP 메서드가 다른 경우 새로운 Controller 클래스를 추가하지 않고 Controller 하나로 GET, POST 요청을 모두 지원하는 것이 가능해짐 <br>
+
