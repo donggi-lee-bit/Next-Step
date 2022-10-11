@@ -27,6 +27,7 @@ public class ListUserController extends AbstractController {
             sb.append("<tr>" + user.getEmail() + "</td>");
             sb.append("</tr>");
         }
+        sb.append("</table>");
         response.forwardBody(sb.toString());
     }
 
