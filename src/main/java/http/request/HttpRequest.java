@@ -1,5 +1,6 @@
 package http.request;
 
+import http.HttpCookie;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,5 +60,9 @@ public class HttpRequest {
 
     public String getParameter(String name) {
         return requestParams.getParameter(name);
+    }
+
+    public HttpCookie getCookies() {
+        return new HttpCookie(getHeader("Cookie"));
     }
 }
