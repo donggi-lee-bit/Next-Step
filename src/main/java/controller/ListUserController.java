@@ -1,6 +1,7 @@
 package controller;
 
 import db.DataBase;
+import http.HttpSession;
 import http.request.HttpRequest;
 import http.response.HttpResponse;
 import java.util.Collection;
@@ -12,7 +13,7 @@ public class ListUserController extends AbstractController {
 
     @Override
     protected void doGet(HttpRequest request, HttpResponse response) {
-        if (!isLogin(request.getHeader("Cookie"))) {
+        if (!isLogin(request.getSession())) {
             response.sendRedirect("/user/login.html");
             return;
         }
@@ -31,12 +32,12 @@ public class ListUserController extends AbstractController {
         response.forwardBody(sb.toString());
     }
 
-    private boolean isLogin(String cookie) {
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
-        String value = cookies.get("logined");
-        if (value == null) {
+    // todo isLogin 메서드가 static인 것과 doGet, doPost 메서드의 접근허용자가 protected인 이유
+    private static boolean isLogin(HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user == null) {
             return false;
         }
-        return Boolean.parseBoolean(value);
+        return true;
     }
 }
