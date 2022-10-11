@@ -1,6 +1,7 @@
 package controller;
 
 import db.DataBase;
+import http.HttpSession;
 import http.request.HttpRequest;
 import http.response.HttpResponse;
 import model.User;
@@ -11,13 +12,11 @@ public class LoginController extends AbstractController{
     protected void doPost(HttpRequest request, HttpResponse response) {
         User findUser = DataBase.findUserById(request.getParameter("userId"));
         if (findUser != null) {
-            // 존재하는 회원
             if (findUser.login(request.getParameter("password"))) {
-                // 비밀번호 맞으면 로그인 성공
-                response.addHeader("Set-Cookie", "logined=true; Path=/");
+                HttpSession session = request.getSession();
+                session.setAttribute("user", findUser);
                 response.sendRedirect("/index.html");
             } else {
-                // 비밀 번호 틀리면 로그인 실패
                 response.sendRedirect("/user/login_failed.html");
             }
         } else {
