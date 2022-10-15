@@ -15,7 +15,7 @@
             <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="../index.jsp">Posts</a></li>
                 <li><a href="../user/login.jsp" role="button">로그인</a></li>
-                <li><a href="form.jsp" role="button">회원가입</a></li>
+                <li><a href="form" role="button">회원가입</a></li>
             </ul>
         </div>
     </div>
