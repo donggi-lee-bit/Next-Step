@@ -1,8 +1,9 @@
 package next.web;
 
-import core.db.DataBase;
+import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import next.dao.UserDao;
 import next.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,12 @@ public class CreateUserServlet implements Controller {
         User user = new User(request.getParameter("userId"), request.getParameter("password"),
             request.getParameter("name"), request.getParameter("email"));
         log.debug("user: {}", user);
-        DataBase.addUser(user);
+        UserDao userDao = new UserDao();
+        try {
+            userDao.insert(user);
+        } catch (SQLException e) {
+            log.error(e.getMessage());
+        }
         return "redirect:/";
     }
 }

@@ -1,19 +1,22 @@
 package next.web;
 
-import core.db.DataBase;
+import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import next.dao.UserDao;
 import next.model.User;
 
 public class ListUserServlet implements Controller {
 
     @Override
-    public String execute(HttpServletRequest request, HttpServletResponse response) {
+    public String execute(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException {
         if (!isLogined(request.getSession())) {
             return "redirect:/users/loginForm";
         }
-        request.setAttribute("users", DataBase.findAll());
+        UserDao userDao = new UserDao();
+        request.setAttribute("users", userDao.findAll());
         return "/user/list.jsp";
     }
 
