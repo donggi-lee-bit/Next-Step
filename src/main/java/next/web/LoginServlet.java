@@ -1,38 +1,32 @@
 package next.web;
 
 import core.db.DataBase;
-import java.io.IOException;
-import java.util.NoSuchElementException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import next.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@WebServlet("/user/login")
-public class LoginServlet extends HttpServlet {
+public class LoginServlet implements Controller {
+
+    private static final Logger log = LoggerFactory.getLogger(LoginServlet.class);
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-        String userId = req.getParameter("userId");
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
+        User findUser = DataBase.findUserById(request.getParameter("userId"));
+        log.debug("loginUser: {}", findUser);
 
-        User findUser = DataBase.findUserById(userId);
-        if (findUser == null) {
-            throw new NoSuchElementException("존재하지 않는 사용자입니다.");
+        if (findUser != null) {
+            if (findUser.login(request.getParameter("password"))) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", findUser);
+                return "redirect:/";
+            } else {
+                return "/user/login";
+            }
+        } else {
+            return "/user/login";
         }
-
-        String findUserPassword = findUser.getPassword();
-        String password = req.getParameter("password");
-        if (!findUserPassword.equals(password)) {
-            throw new IllegalStateException("비밀번호가 올바르지 않습니다.");
-        }
-
-        // 해당 유저의 session 발급
-        HttpSession session = req.getSession();
-        session.setAttribute("user", findUser);
-        resp.sendRedirect("/");
     }
 }

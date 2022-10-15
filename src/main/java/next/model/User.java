@@ -70,4 +70,7 @@ public class User {
         return new User(user.userId, user.password, user.name, user.email);
     }
 
+    public boolean login(String password) {
+        return this.password.equals(password);
+    }
 }

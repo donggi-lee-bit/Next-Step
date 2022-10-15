@@ -17,12 +17,12 @@
                 <c:choose>
 <%--                    not empty: 객체 값이 비어있지 않을 경우 true--%>
                     <c:when test="${not empty user}">
-                        <li><a href="user/logout" role="button">로그아웃</a></li>
-                        <li><a href="user/update.jsp" role="button">개인정보수정</a></li>
+                        <li><a href="users/logout" role="button">로그아웃</a></li>
+                        <li><a href="users/update" role="button">개인정보수정</a></li>
                     </c:when>
                     <c:otherwise>
-                        <li><a href="user/login.jsp" role="button">로그인</a></li>
-                        <li><a href="user/form.html" role="button">회원가입</a></li>
+                        <li><a href="users/loginForm" role="button">로그인</a></li>
+                        <li><a href="users/form" role="button">회원가입</a></li>
                     </c:otherwise>
                 </c:choose>
 

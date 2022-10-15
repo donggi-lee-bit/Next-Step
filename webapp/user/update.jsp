@@ -15,7 +15,7 @@
             <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="../index.jsp">Posts</a></li>
                 <li><a href="login.jsp" role="button">로그인</a></li>
-                <li><a href="../user/form.html" role="button">회원가입</a></li>
+                <li><a href="form.jsp" role="button">회원가입</a></li>
                 <li><a href="#" role="button">로그아웃</a></li>
                 <li><a href="#" role="button">개인정보수정</a></li>
             </ul>
@@ -26,7 +26,7 @@
 <div class="container" id="main">
     <div class="col-md-6 col-md-offset-3">
         <div class="panel panel-default content-main">
-            <form name="question" method="post" action="/user/update">
+            <form name="question" method="post" action="/users/update">
                 <div class="form-group">
 <%--                    <label for="userId">사용자 아이디</label>--%>
 <%--                    <input class="form-control" id="userId" name="userId" placeholder="User ID">--%>
