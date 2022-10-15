@@ -1,17 +1,16 @@
 package next.web;
 
+import static core.db.DataBase.findAll;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-
-public class LogoutServlet implements Controller {
+public class HomeController implements Controller{
 
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response)
         throws Exception {
-        HttpSession session = request.getSession();
-        session.removeAttribute("user");
-        return "redirect:/users/loginForm";
+        request.setAttribute("users", findAll());
+        return "index.jsp";
     }
 }
