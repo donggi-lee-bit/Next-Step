@@ -7,19 +7,83 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import next.jdbc.InsertJdbcTemplate;
-import next.jdbc.UpdateJdbcTemplate;
+import next.jdbc.JdbcTemplate;
 import next.model.User;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        InsertJdbcTemplate insertJdbcTemplate = new InsertJdbcTemplate();
-        insertJdbcTemplate.insert(user, this);
+        JdbcTemplate insertJdbcTemplate = new JdbcTemplate() {
+            @Override
+            public void update(User user) throws SQLException {
+                Connection con = null;
+                PreparedStatement pstmt = null;
+                try {
+                    con = ConnectionManager.getConnection();
+                    pstmt = con.prepareStatement(createQuery());
+                    setValues(user, pstmt);
+                    pstmt.executeUpdate();
+                } finally {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+
+                    if (con != null) {
+                        con.close();
+                    }
+                }
+            }
+
+            @Override
+            public void setValues(User user, PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, user.getUserId());
+                pstmt.setString(2, user.getPassword());
+                pstmt.setString(3, user.getName());
+                pstmt.setString(4, user.getEmail());
+            }
+
+            @Override
+            public String createQuery() {
+                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+            }
+        };
+        insertJdbcTemplate.update(user);
     }
 
     public void update(User user) throws SQLException {
-        UpdateJdbcTemplate updateJdbcTemplate = new UpdateJdbcTemplate();
-        updateJdbcTemplate.update(user, this);
+        JdbcTemplate updateJdbcTemplate = new JdbcTemplate() {
+            @Override
+            public void update(User user) throws SQLException {
+                Connection con = null;
+                PreparedStatement pstmt = null;
+                try {
+                    con = ConnectionManager.getConnection();
+                    pstmt = con.prepareStatement(createQuery());
+                    setValues(user, pstmt);
+                    pstmt.executeUpdate();
+                } finally {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                    if (con != null) {
+                        con.close();
+                    }
+                }
+            }
+
+            @Override
+            public void setValues(User user, PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(4, user.getUserId());
+                pstmt.setString(1, user.getPassword());
+                pstmt.setString(2, user.getName());
+                pstmt.setString(3, user.getEmail());
+            }
+
+            @Override
+            public String createQuery() {
+                return "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userId = ?";
+            }
+        };
+        updateJdbcTemplate.update(user);
     }
 
     public User findByUserId(String userId) throws SQLException {
@@ -87,27 +151,5 @@ public class UserDao {
                 con.close();
             }
         }
-    }
-
-    public void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
-        pstmt.setString(1, user.getUserId());
-        pstmt.setString(2, user.getPassword());
-        pstmt.setString(3, user.getName());
-        pstmt.setString(4, user.getEmail());
-    }
-
-    public void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
-        pstmt.setString(4, user.getUserId());
-        pstmt.setString(1, user.getPassword());
-        pstmt.setString(2, user.getName());
-        pstmt.setString(3, user.getEmail());
-    }
-
-    public String createQueryForInsert() {
-        return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-    }
-
-    public String createQueryForUpdate() {
-        return "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userId = ?";
     }
 }
